@@ -127,8 +127,7 @@ public class chassisSubsystem extends SubsystemBase {
 
   }
 
-  //#region the different drive methods
-
+  
   /**
    * This is the main driving function for the AgileRunner robot.
    * @param fwd Percent forward.  Used to decide which direction the robot goes in with fwd
@@ -517,10 +516,8 @@ public class chassisSubsystem extends SubsystemBase {
 
   }
 
-  //#endregion
 
-  //#region code used for getting solving the full rotation problems. Has working and not working code
-
+  
   private double toPointSpeedLimit(double attemptSpeed){
     
     if(Math.abs(attemptSpeed) > 0.7){
@@ -653,7 +650,6 @@ public class chassisSubsystem extends SubsystemBase {
     return 0;
   }
 
-  //#endregion
   
 
   /**
@@ -687,7 +683,6 @@ public class chassisSubsystem extends SubsystemBase {
   }
 
 
-  //#region Set and read pid methods
   
   // Creates the PID controllers for all 4 rotation motors.  Should only ever be called once
   public void SetPIDController(){
@@ -768,9 +763,7 @@ public class chassisSubsystem extends SubsystemBase {
     return false;
   }
 
-  //#endregion
 
-  //#region disable and reset methods
 
   public void disablePids(){
     fLPidController.close();
@@ -798,9 +791,7 @@ public class chassisSubsystem extends SubsystemBase {
     gyro.reset();
   }
 
-  //#endregion
 
-  //#region Smartdashboard methods
 
   /**
    * Calls all smartdashboard data placements
@@ -837,7 +828,6 @@ public class chassisSubsystem extends SubsystemBase {
   
   }
 
-  //#endregion
 
   @Override
   public void periodic() {
