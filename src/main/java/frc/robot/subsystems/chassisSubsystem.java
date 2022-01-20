@@ -33,7 +33,7 @@ public class chassisSubsystem extends SubsystemBase {
   
     /*
     *   TODO
-    *   MAKE TODO LIST
+    *   Upload to Github
     *   Add Greathouse's methods and make them work correctly
     */
 
@@ -126,6 +126,8 @@ public class chassisSubsystem extends SubsystemBase {
   m_kinematics = new SwerveDriveKinematics(frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
   }
+
+  //#region the different drive methods
 
   /**
    * This is the main driving function for the AgileRunner robot.
@@ -515,6 +517,10 @@ public class chassisSubsystem extends SubsystemBase {
 
   }
 
+  //#endregion
+
+  //#region code used for getting solving the full rotation problems. Has working and not working code
+
   private double toPointSpeedLimit(double attemptSpeed){
     
     if(Math.abs(attemptSpeed) > 0.7){
@@ -646,6 +652,42 @@ public class chassisSubsystem extends SubsystemBase {
 
     return 0;
   }
+
+  //#endregion
+  
+
+  /**
+   * Makes the drive motors go in coast mode
+   */
+  public void wheelBrakesMode(){
+    fLDriveMotor.setNeutralMode(NeutralMode.Coast);
+    fRDriveMotor.setNeutralMode(NeutralMode.Coast);
+    bLDriveMotor.setNeutralMode(NeutralMode.Coast);
+    bRDriveMotor.setNeutralMode(NeutralMode.Coast);
+  }
+
+  /**
+   * @return Average position of all 4 drive motors
+   */
+  public double wheelMotorCountAverage(){
+    return (
+    -fRDriveMotor.getSelectedSensorPosition() +
+     fLDriveMotor.getSelectedSensorPosition() +
+    -bRDriveMotor.getSelectedSensorPosition() +
+     bLDriveMotor.getSelectedSensorPosition())/ 4;
+  }
+
+
+  
+  /**
+   * Get the chassis angle
+   */
+  public double getChassisAngle(){
+    return gyro.getAngle();
+  }
+
+
+  //#region Set and read pid methods
   
   // Creates the PID controllers for all 4 rotation motors.  Should only ever be called once
   public void SetPIDController(){
@@ -682,52 +724,6 @@ public class chassisSubsystem extends SubsystemBase {
     
 
     setPid = false; //Since the if statement that calls this function requires this boolean to be true, this prevents it from being rerun
-  }
-
-  /**
-   * Makes the drive motors go in coast mode
-   */
-  public void wheelBrakesMode(){
-    fLDriveMotor.setNeutralMode(NeutralMode.Coast);
-    fRDriveMotor.setNeutralMode(NeutralMode.Coast);
-    bLDriveMotor.setNeutralMode(NeutralMode.Coast);
-    bRDriveMotor.setNeutralMode(NeutralMode.Coast);
-  }
-
-  /**
-   * @return Average position of all 4 drive motors
-   */
-  public double wheelMotorCountAverage(){
-    return (
-    -fRDriveMotor.getSelectedSensorPosition() +
-     fLDriveMotor.getSelectedSensorPosition() +
-    -bRDriveMotor.getSelectedSensorPosition() +
-     bLDriveMotor.getSelectedSensorPosition())/ 4;
-  }
-
-  /**
-   * Zeros all 4 drive motors 
-   */
-  public void zeroMotors(){
-    fRDriveMotor.setSelectedSensorPosition(0);
-    fLDriveMotor.setSelectedSensorPosition(0);
-    bRDriveMotor.setSelectedSensorPosition(0);
-    bLDriveMotor.setSelectedSensorPosition(0);
-  }
-
-  
-  /**
-   * Get the chassis angle
-   */
-  public double getChassisAngle(){
-    return gyro.getAngle();
-  }
-
-  /**
-   * Resets the gyro
-   */
-  public void resetGyro(){
-    gyro.reset();
   }
 
   public boolean checkPIDlocation(){
@@ -772,12 +768,39 @@ public class chassisSubsystem extends SubsystemBase {
     return false;
   }
 
+  //#endregion
+
+  //#region disable and reset methods
+
   public void disablePids(){
     fLPidController.close();
     fRPidController.close();
     bLPidController.close();
     bRPidController.close();
   }
+
+  
+  /**
+   * Zeros all 4 drive motors 
+   */
+  public void zeroMotors(){
+    fRDriveMotor.setSelectedSensorPosition(0);
+    fLDriveMotor.setSelectedSensorPosition(0);
+    bRDriveMotor.setSelectedSensorPosition(0);
+    bLDriveMotor.setSelectedSensorPosition(0);
+  }
+
+  
+  /**
+   * Resets the gyro
+   */
+  public void resetGyro(){
+    gyro.reset();
+  }
+
+  //#endregion
+
+  //#region Smartdashboard methods
 
   /**
    * Calls all smartdashboard data placements
@@ -814,6 +837,7 @@ public class chassisSubsystem extends SubsystemBase {
   
   }
 
+  //#endregion
 
   @Override
   public void periodic() {
