@@ -7,9 +7,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -49,16 +46,16 @@ public class chassisSubsystem extends SubsystemBase {
 
   //The Falcon 500s are in charge of spinning the wheels
   WPI_TalonFX fRDriveMotor = new WPI_TalonFX(6);
-  WPI_TalonFX fLDriveMotor = new WPI_TalonFX(21);
-  WPI_TalonFX bRDriveMotor = new WPI_TalonFX(2);
-  WPI_TalonFX bLDriveMotor = new WPI_TalonFX(11);
+  WPI_TalonFX fLDriveMotor = new WPI_TalonFX(8);
+  WPI_TalonFX bRDriveMotor = new WPI_TalonFX(4);
+  WPI_TalonFX bLDriveMotor = new WPI_TalonFX(2);
 
 
   //The Neo550s are in charge of rotating the wheels
-  public CANSparkMax fRrotationMotor = new CANSparkMax(5, MotorType.kBrushless);
-  public CANSparkMax fLrotationMotor = new CANSparkMax(20, MotorType.kBrushless);
-  public CANSparkMax bRrotationMotor = new CANSparkMax(10, MotorType.kBrushless);
-  public CANSparkMax bLrotationMotor = new CANSparkMax(1, MotorType.kBrushless);
+  public WPI_TalonFX fRrotationMotor = new WPI_TalonFX(5);
+  public WPI_TalonFX fLrotationMotor = new WPI_TalonFX(7);
+  public WPI_TalonFX bRrotationMotor = new WPI_TalonFX(3);
+  public WPI_TalonFX bLrotationMotor = new WPI_TalonFX(1);
 
   SlewRateLimiter frontLeftLimiter = new SlewRateLimiter(.72);
   SlewRateLimiter frontRightLimiter = new SlewRateLimiter(.72);
@@ -202,14 +199,13 @@ public class chassisSubsystem extends SubsystemBase {
 
     
 
-    SwerveModuleState frontLeftOptimize = SwerveModuleState.optimize(frontLeft, new Rotation2d((fLrotationMotor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
-    SwerveModuleState frontRightOptimize = SwerveModuleState.optimize(frontRight, new Rotation2d((fLrotationMotor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
-    SwerveModuleState backLeftOptimize = SwerveModuleState.optimize(backLeft, new Rotation2d((fLrotationMotor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
-    SwerveModuleState backRightOptimize = SwerveModuleState.optimize(backRight, new Rotation2d((fLrotationMotor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
-
+    SwerveModuleState frontLeftOptimize = SwerveModuleState.optimize(frontLeft, new Rotation2d((fLrotationMotor.getSelectedSensorPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
+    SwerveModuleState frontRightOptimize = SwerveModuleState.optimize(frontRight, new Rotation2d((fLrotationMotor.getSelectedSensorPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
+    SwerveModuleState backLeftOptimize = SwerveModuleState.optimize(backLeft, new Rotation2d((fLrotationMotor.getSelectedSensorPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
+    SwerveModuleState backRightOptimize = SwerveModuleState.optimize(backRight, new Rotation2d((fLrotationMotor.getSelectedSensorPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation) * 0.0174533));
     
 
-    // Get the needed angle from the module state and convert it to the Cnts needed for the CanSparkMAx PID loop
+    // Get the needed angle from the module state and convert it to the Cnts needed for the CanSparkMax PID loop
     fLAngle = (frontLeftOptimize.angle.getDegrees() / Constants.kChassisSwerveOutputDegreeToNeoRotation);
     fRAngle = (frontRightOptimize.angle.getDegrees() / Constants.kChassisSwerveOutputDegreeToNeoRotation);
     bLAngle = (backLeftOptimize.angle.getDegrees() / Constants.kChassisSwerveOutputDegreeToNeoRotation);
@@ -228,12 +224,16 @@ public class chassisSubsystem extends SubsystemBase {
     rotationOverflow(bLrotationMotor, 2);
     rotationOverflow(bRrotationMotor, 3);
     
-    //these lines tell the motor controller what poisition to set the motor to
-    fLrotationMotor.getPIDController().setReference(fLAngle, ControlType.kPosition);
+    //these lines tell the motor controller what position to set the motor to
+    /*fLrotationMotor.getPIDController().setReference(fLAngle, ControlType.kPosition);
     fRrotationMotor.getPIDController().setReference(fRAngle, ControlType.kPosition);
     bLrotationMotor.getPIDController().setReference(bLAngle, ControlType.kPosition);
-    bRrotationMotor.getPIDController().setReference(bRAngle, ControlType.kPosition);
+    bRrotationMotor.getPIDController().setReference(bRAngle, ControlType.kPosition);*/
     
+    /*
+    *   TODO 
+    *   Make PID for turn motors.
+    */
 
     //WIP for replacing the avoidance method of infinite rotation with real infinite rotation.
     //Uses the turn forever method of going past full rotation.  Make sure to comment out rotationOverflow calls and the previous inputs to the rotation motors.
@@ -556,7 +556,7 @@ public class chassisSubsystem extends SubsystemBase {
    * @param rotationMotor Used to check a motor's position to avoid doing a full rotation
    * @param angleNumber input an integer based on which motor is being used.  FL = 0, FR = 1, BL = 2, BR = 3
    */
-  public void rotationOverflow(CANSparkMax rotationMotor, int angleNumber){
+  public void rotationOverflow(WPI_TalonFX rotationMotor, int angleNumber){
     double currentRotation = rotationMotor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation;
     double goalAngle = 0;   //used as a reference of the Rotation Motor's goal rotation in degrees.
     
@@ -618,7 +618,7 @@ public class chassisSubsystem extends SubsystemBase {
 
   // }
 
-  public double TurnForever(CANSparkMax motor, double angleNumber){
+  public double TurnForever(WPI_TalonFX motor, double angleNumber){
 
     double motorAngle = motor.getEncoder().getPosition() * Constants.kChassisSwerveOutputDegreeToNeoRotation;
     double goalPosition = 0;
@@ -640,7 +640,7 @@ public class chassisSubsystem extends SubsystemBase {
     return goalPosition;
   }
 
-  public double optimizeDirection(CANSparkMax motor, double goalAngle){
+  public double optimizeDirection(WPI_TalonFX motor, double goalAngle){
     
     if(90 - (motor.getEncoder().getPosition() / Constants.kChassisSwerveOutputDegreeToNeoRotation) < 90){
 
